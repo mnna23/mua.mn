@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+<meta charset="UTF-8">
+<title>mua's.mn</title>
+<meta name="description" content="mua's, Хятад ханз, дуудлага, утгыг сурах интерактив флэш карт. Монгол хэл дээр.">
+<meta name="keywords" content="mua, хятад хэл, ханз, монгол, сурах, flashcards, chinese">
+<meta name="author" content="Bulgan">
+<meta name="robots" content="index, follow">
+</head>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #ff00ff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+.card {
+  width: 300px;
+  height: 500px;
+  perspective: 1000px;
+  margin: 10px;
+  cursor: pointer;
+  position: relative;
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.card.show {
+  opacity: 1;
+  transform: scale(1);
+}
+.inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+.card.flipped .inner {
+  transform: rotateY(180deg);
+}
+.front, .back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(247, 58, 174, 0.781);
+}
+.front {
+  background:pink;
+  font-size: 60px;
+}
+.back {
+  background: #4CAF50;
+  color:  peachpuff;
+  font-size: 20px;
+  transform: rotateY(180deg);
+  text-align: center;
+  padding: 10px;
+  flex-direction: column;
+}
+button {
+  margin-top: 15px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background: #eb4b80;
+  color: pink;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+button:hover {
+  background: #c24f7f;
+}
+.btn-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  justify-content: center;
+}
+</style>
+</head>
+<body>
+
+
+<div id="cardContainer"></div>
+
+
+<div class="btn-group">
+  <button id="nextBtn">DARAACHIIX</button>
+  <button id="shuffleBtn">XOLIJ GARGAX</button>
+</div>
+
+
+<script>
+let cardsData = [
+  ["人", "rén", "хүн"],
+  ["大", "dà", "том"],
+  ["天", "tiān", "тэнгэр"],
+  ["木", "mù", "мод"],
+  ["林", "lín", "ой"],
+  ["森", "sēn", "ой мод"],
+  ["口", "kǒu", "ам"],
+  ["日", "rì", "нар, өдөр"],
+  ["目", "mù", "нүд"],
+  ["水", "shuǐ", "ус"],
+  ["火", "huǒ", "гал"],
+  ["明", "mīng", "гэрэл гэгээ"],
+  ["月", "yuè", "сар"],
+  ["女", "nu", "эмэгтэй"],
+  ["男", "nán", "эрэгтэй"],
+  ["媽媽", "mama", "ээж"],
+  ["爸爸", "baba", "аав"],
+  ["田", "tián", "газар тариалан"],
+  ["姊姊", "Jiě jie", "эгч"],
+  ["哥哥", "gē ge", "ах"],
+  ["弟弟", "dì di", "эрэгтэй дүү"],
+  ["妹妹", "mèi mei", "эмэгтэй дүү"],
+  ["家", "jiā", "гэр бүл"],
+  ["奶奶", "Nǎinai", "эмээ"],
+  ["爷爷", "Yéye", "өвөө"],
+  ["老师", "lǎoshī", "багш"],
+  ["学生", "xuéshēng", "сурагч"],
+  ["朋友", "péngyǒu", "найз"],
+  ["零", "Líng", "тэг"],
+  ["一", "yī", "нэг"],
+  ["二", "èr", "хоёр"],
+  ["三", "sān", "гурав"],
+  ["四", "sì", "дөрөв"],
+  ["五", "wǔ", "тав"],
+  ["六", "liù", "зургаа"],
+  ["七", "qī", "долоо"],
+  ["八", "bā", "найм"],
+  ["九", "jiǔ", "ес"],
+  ["十", "shí", "арав"],
+  ["百", "bǎi", "зуу"],
+  ["千", "qiān", "мянга"],
+  ["万", "wàn", "сая"],
+  ["力", "lì", "хүч чадал"],
+  ["你", "nǐ", "чи"],
+  ["我", "wǒ", "би"],
+  ["他", "tā", "тэр (эрэгтэй)"],
+  ["她", "tā", "тэр (эмэгтэй)"],
+  ["好", "hǎo", "сайн"],
+  ["是", "shì", "тийм, бол"],
+  ["不", "bù", "үгүй"],
+  ["您", "nín", "та"],
+  ["你们", "nímén", "та нар"],
+  ["我们", "wǒměn", "бид нар"],
+  ["对不起", "duìbuqǐ", "уучлаарай"],
+  ["谢谢", "xièxiè", "баярлалаа"],
+  ["没关系", "méiguānxì", "зүгээр"],
+  ["客气", "búkèq", "баярлалаа гэдэгт хариулах"]
+  ["再见", "zàijiàn", "баяртай"],
+  ["叫", "jiào", "дуудах"],
+  ["名字", "míngzì", "нэр"],
+  ["什么", "shénme", "юу"],
+  ["是", "shì", "мөн, бол"],
+  ["中国", "zhōngguó", "хятад"],
+  ["美国", "měiguó", "америк"],
+  ["蒙古国", "měnggǔguó", "монгол"],
+  ["书", "shū", "ном"],
+  ["这", "zhè", "энэ"],
+  ["那", "nà", "тэр"],
+  ["哪里", "nǎlǐ", "хаана"],
+  ["谁", "shéi", "хэн"],
+  ["的", "de", "өмчлөх"],
+  ["汉语", "hanyǔ", "хятад хэл"],
+  ["呢", "ne", "харин"],
+  ["同学", "tóngxué", "ангийн хүүхэд"],
+  ["朋友", "péngyǒu", "найз"],
+];
+
+let currentIndex = 0;
+
+const cardContainer = document.getElementById("cardContainer");
+
+function showCard(index) {
+  cardContainer.innerHTML = "";
+  const [char, pinyin, meaning] = cardsData[index];
+  const card = document.createElement("div");
+  card.className = "card";
+  card.innerHTML = `
+    <div class="inner">
+      <div class="front">${char}</div>
+      <div class="back"><p>${pinyin}</p><p>${meaning}</p></div>
+    </div>
+  `;
+  card.onclick = () => card.classList.toggle("flipped");
+  cardContainer.appendChild(card);
+
+  
+  setTimeout(() => {
+    card.classList.add("show");
+  }, 50);
+}
+
+
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+document.getElementById("nextBtn").onclick = () => {
+  currentIndex++;
+  if (currentIndex >= cardsData.length) {
+    currentIndex = 0;
+  }
+  showCard(currentIndex);
+};
+
+document.getElementById("shuffleBtn").onclick = () => {
+  shuffleArray(cardsData);
+  currentIndex = 0;
+  showCard(currentIndex);
+};
+
+
+showCard(currentIndex);
+</script>
+
+</body>
+</html>
